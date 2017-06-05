@@ -19,16 +19,26 @@ class ViewController: UIViewController {
     @IBOutlet weak var refreshButton: UIButton!
     @IBOutlet weak var currentWeatherIcon: UIImageView!
     
+    @IBAction func getCurrentWeather() {
+        
+        toggleRefreshAnimation(on: true)
+        
+        let coordinate = Coordinate(latitude: 32.967828, longitude: -97.220098)
+        client.getCurrentWeather(at: coordinate) { [unowned self] currentWeather, error in
+            if let currentWeather = currentWeather {
+                let viewModel = CurrentWeatherViewModel(model: currentWeather)
+                self.displayWeather(using: viewModel)
+                self.toggleRefreshAnimation(on: false)
+            }
+        }
+    }
     
-    
+    let client = DarkSkyApiClient()
+
     // MARK: - View Controller Lifecycle Methods -
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
-        let currentWeather = CurrentWeather(temperature: 85.0, humidity: 0.8, precipitationProbability: 0.1, summary: "Hot!", icon: "clear-day")
-        let currentWeatherViewModel = CurrentWeatherViewModel(model: currentWeather)
-        
-        displayWeather(using: currentWeatherViewModel)
+        getCurrentWeather()
     }
     
     func displayWeather(using viewModel: CurrentWeatherViewModel) {
@@ -37,6 +47,16 @@ class ViewController: UIViewController {
         currentPrecipitationLabel.text = viewModel.precipitationProbability
         currentSummaryLabel.text = viewModel.summary
         currentWeatherIcon.image = viewModel.icon
+    }
+    
+    func toggleRefreshAnimation(on: Bool) {
+        refreshButton.isHidden = on
+        
+        if on {
+           activityIndicator.startAnimating()
+        } else {
+           activityIndicator.stopAnimating()
+        }
     }
 }
 
